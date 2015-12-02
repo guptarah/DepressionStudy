@@ -12,9 +12,7 @@ def m_step(X_est,Y,x_list):
 
    N = X_est.shape[0]
 
-   # Estimating W
-   w_est = numpy.dot(numpy.linalg.pinv(X_est),Y)
-
+   # Estimating x_nn
    out = []
    for i in range(N):
       cur_Y = X_est[i,:]
@@ -28,13 +26,13 @@ def m_step(X_est,Y,x_list):
    input_dim = 9
    hidden_dim = 6
    output_dim = 3
-   NN = MultiLayerPerceptron.MLP_Classifier(input_dim,hidden_dim,output_dim, iterations = 50, learning_rate = 0.01,\
+   NN = MultiLayerPerceptron.MLP_Classifier(input_dim,hidden_dim,output_dim, iterations = 20, learning_rate = 0.01,\
                         momentum = 0.5, rate_decay = 0.0001,\
-                        output_layer = 'logistic')
+                        output_layer = 'softmax')
    NN.fit(out)
   
    # getting output for each train instance
-   x_nn = numpy.zeros(N,output_dim)  
+   x_nn = numpy.zeros((N,output_dim))  
    for i in range(N):
       test_out = []
       cur_Y = X_est[i,:]
@@ -44,5 +42,7 @@ def m_step(X_est,Y,x_list):
          test_out.append(tupledata)
       x_nn[i,:] = numpy.mean(numpy.matrix(NN.test(out)),axis=0)
 
+   # Estimating W
+   w_est = numpy.dot(numpy.linalg.pinv(x_nn),Y)
 
    return w_est,x_nn

@@ -1,14 +1,10 @@
 import numpy
 from sklearn import linear_model
 from LoadData import LoadData
-import sys
-sys.path.append('/home/rcf-proj/pg/guptarah/DepressionStudy/Scripts/EM')
-from EStep import e_step
-from MStep import m_step
 
 def PerformCV():
    # Load the data
-   [depression_scores,vad_ts]=LoadData('/home/rcf-proj/pg/guptarah/DepressionStudy/Data/PreparedData')
+   [depression_scores,vad_ts,feature_ts]=LoadData('/home/rcf-proj/pg/guptarah/DepressionStudy/Data/PreparedData')
 
    split_size = 10
    count_data = len(vad_ts) 
@@ -19,10 +15,15 @@ def PerformCV():
 
    # computing statisticals for baseline
   
-   init_targets = numpy.zeros((count_data,3)) # right now mapping everything to 9 features 
+   baseline_features = numpy.zeros((count_data,12)) # right now I have 9 features 
    for i in range(count_data):
       current_ts = vad_ts[i]
-      init_targets[i] = numpy.mean(current_ts,axis=1).T
+      mean_feature = numpy.mean(current_ts,axis=1).T
+      std_feature = numpy.std(current_ts,axis=1).T
+      exp_feature = numpy.mean(numpy.exp(current_ts),axis=1).T
+      min_feature = numpy.amin(numpy.exp(current_ts),axis=1).T
+      max_feature = numpy.amax(numpy.exp(current_ts),axis=1).T
+      baseline_features[i] = numpy.concatenate((mean_feature, std_feature, exp_feature, min_feature),axis=1)
 
    test_errors = numpy.zeros((0,1))
    for i in range(count_splits):
@@ -31,19 +32,12 @@ def PerformCV():
       
       test_scores = depression_scores[test_indices,:] 
       train_scores = depression_scores[train_indices,:] 
-      test_vad_ts = [vad_ts[j] for j in test_indices] 
-      train_vad_ts = [vad_ts[j] for j in train_indices] 
-      x_nn = init_targets[train_indices,:] # initializing x_nn 
-      w = numpy.ones((init_targets.shape[1],1)) # initializeing w   
- 
-      not_converged = True 
-      while not_converged:
-         # Estep
-         x_est = e_step(w,train_scores,x_nn) #x_nn are statisticals 
-         
-         # Mstep
-         [w,x_nn] = m_step(x_est,train_scores,train_vad_ts) 
-         
+      test_vad_ts = [vad_ts[j] for j in test_indices]
+      train_vad_ts = [vad_ts[j] for j in train_indices]
+      test_features_ts = [feature_ts[j] for j in test_indices]
+      train_features_ts = [feature_ts[j] for j in train_indices]
+     
+      model = TrainEM(train_scores,train_vad_ts,train_features_ts) 
 
    print 'RMSE in scores: ', numpy.std(depression_scores)
    print 'Baseline RMSE: ', numpy.sqrt(numpy.dot(test_errors.T,test_errors)/count_data) 
