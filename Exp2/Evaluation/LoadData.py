@@ -22,7 +22,7 @@ def LoadData(input_dir):
    vad_ts = []
    feature_ts = []
    for patient_dir in os.listdir(input_dir):
-      print 'In dir: ', patient_dir        
+      #print 'In dir: ', patient_dir        
       depression_file = input_dir + '/' + patient_dir + '/depression_score'  
       depression_score = numpy.genfromtxt(depression_file,dtype='int')
       depression_scores = numpy.concatenate((depression_scores,numpy.matrix(depression_score)),axis=0)
@@ -37,8 +37,8 @@ def LoadData(input_dir):
       features_file = input_dir + '/' + patient_dir + '/feature_values' 
       feature_values = numpy.genfromtxt(features_file,delimiter=',')
       
-      if (valence_values.shape[0] != arousal_values.shape[0]) or (valence_values.shape[0] != dominance_values.shape[0]):
-         print valence_values.shape, arousal_values.shape, dominance_values.shape
+      #if (valence_values.shape[0] != arousal_values.shape[0]) or (valence_values.shape[0] != dominance_values.shape[0]):
+      #   print valence_values.shape, arousal_values.shape, dominance_values.shape
 
       min_frames = numpy.amin([valence_values.shape[0],arousal_values.shape[0],dominance_values.shape[0]])
       valence_values = valence_values[0:min_frames]

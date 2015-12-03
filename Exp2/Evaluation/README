@@ -1,0 +1,3 @@
+TrainEMLR : all multiplicative with depression added as feature again
+TrainEMLR2 : all multiplicative (depression not added as feature again)
+TrainEMLR3 : 1,multiplicative 2,divisive 3,as is (depression not added as feature again)

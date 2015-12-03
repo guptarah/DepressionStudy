@@ -47,11 +47,10 @@ def PrepareData(train_scores,train_vad_ts,train_features_ts):
 
 def MstepSecondLayer(updated_output,labels_matrix,score_matrix):
    num_feats = updated_output.shape[1]
-   new_updated_matrix = matlib.zeros((updated_output.shape[0],updated_output.shape[1]+1)) # this will have
+   new_updated_matrix = matlib.zeros((updated_output.shape[0],updated_output.shape[1])) # this will have
    # each feat multiplied by score and score as feature
    for i in range(num_feats):
       new_updated_matrix[:,i] = numpy.multiply(updated_output[:,i],score_matrix) 
-   new_updated_matrix[:,i+1] = score_matrix
    second_layer_regr = linear_model.LinearRegression(fit_intercept=True)
    second_layer_regr.fit(new_updated_matrix,labels_matrix)
 
@@ -59,22 +58,23 @@ def MstepSecondLayer(updated_output,labels_matrix,score_matrix):
    print 'cur_error: ', numpy.std(labels_matrix - second_layer_regr.predict(new_updated_matrix),axis=0), \
    numpy.mean(numpy.std(labels_matrix - second_layer_regr.predict(new_updated_matrix),axis=0))
    correlation_matrix = numpy.corrcoef(labels_matrix.T,second_layer_regr.predict(new_updated_matrix).T)
+   print correlation_matrix.shape
    print 'cur_rho: ', correlation_matrix[0,3], correlation_matrix[1,4], correlation_matrix[2,5], \
    (correlation_matrix[0,3]+correlation_matrix[1,4]+correlation_matrix[2,5])/3
    return second_layer_regr
  
 def EStep(updated_output,score_matrix,labels_matrix,second_layer_coeff,second_layer_intercept):
 
-   labels_less_dep = labels_matrix - score_matrix*second_layer_coeff[:,-1].T - numpy.ones(score_matrix.shape)*second_layer_intercept
+   labels_less_const = labels_matrix - numpy.ones(score_matrix.shape)*second_layer_intercept
    frames_x_star = updated_output.shape[0]
    dim_x_star = updated_output.shape[1]
  
    x_star = numpy.zeros(updated_output.shape) 
-   w = second_layer_coeff[:,:-1] 
+   w = second_layer_coeff
    for i in range(frames_x_star):
       cur_d_n = score_matrix[i][0,0]
       inv_mat = numpy.linalg.inv(numpy.square(cur_d_n)*w.T*w + numpy.eye(dim_x_star))
-      cur_x_n = inv_mat * (cur_d_n*w.T*labels_less_dep[i,:].T+updated_output[i,:].T) 
+      cur_x_n = inv_mat * (cur_d_n*w.T*labels_less_const[i,:].T+updated_output[i,:].T) 
       x_star[i,:] = cur_x_n.T
       
    return x_star 
@@ -91,6 +91,7 @@ def TrainEM(train_scores,train_vad_ts,train_features_ts):
    print 'Training error on baseline 1: ', numpy.std(labels_matrix - bl1_regr.predict(bl_features),axis=0), \
    numpy.mean(numpy.std(labels_matrix - bl1_regr.predict(bl_features),axis=0))
    correlation_matrix = numpy.corrcoef(labels_matrix.T,bl1_regr.predict(bl_features).T)
+   print correlation_matrix.shape
    print 'cur_rho: ', correlation_matrix[0,3], correlation_matrix[1,4], correlation_matrix[2,5], \
    (correlation_matrix[0,3]+correlation_matrix[1,4]+correlation_matrix[2,5])/3
    
@@ -99,6 +100,7 @@ def TrainEM(train_scores,train_vad_ts,train_features_ts):
    print 'Training error on baseline 2: ', numpy.std(labels_matrix - bl2_regr.predict(window_matrix),axis=0), \
    numpy.mean(numpy.std(labels_matrix - bl2_regr.predict(window_matrix),axis=0))
    correlation_matrix = numpy.corrcoef(labels_matrix.T,bl2_regr.predict(window_matrix).T)
+   print correlation_matrix.shape
    print 'cur_rho: ', correlation_matrix[0,3], correlation_matrix[1,4], correlation_matrix[2,5], \
    (correlation_matrix[0,3]+correlation_matrix[1,4]+correlation_matrix[2,5])/3
    
@@ -112,8 +114,9 @@ def TrainEM(train_scores,train_vad_ts,train_features_ts):
    # Initialization
    x_star = labels_matrix   
 
+   not_converged = True
    count_iterations = 0
-   while True:
+   while not_converged:
       # M step for first layer
       first_layer_regr = linear_model.LinearRegression(n_jobs=8) 
       first_layer_regr.fit(window_matrix, x_star)
@@ -128,12 +131,11 @@ def TrainEM(train_scores,train_vad_ts,train_features_ts):
       # E step to find x_star
       x_star = EStep(updated_output,score_matrix,labels_matrix,second_layer_coeff,second_layer_intercept) 
       
-      if count_iterations == 10:
+      if count_iterations == 100:
          break
       count_iterations += 1
 
-   model = [first_layer_regr, second_layer_regr]
-   return bl1_regr, bl2_regr, model 
+   return first_layer_regr, second_layer_regr
 
 if __name__ == "__main__":
    TrainEM(train_scores,train_vad_ts,train_features_ts)
