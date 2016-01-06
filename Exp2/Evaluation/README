@@ -1,3 +1,11 @@
 TrainEMLR : all multiplicative with depression added as feature again
 TrainEMLR2 : all multiplicative (depression not added as feature again)
 TrainEMLR3 : 1,multiplicative 2,divisive 3,as is (depression not added as feature again)
+TrainEMLR4 : dev set included for tuning 
+TrainEMLR5 : same as TrainEMLR4 but with portions commented 
+TrainEMLR6 : same as TrainEMLR5 but with bias term removed 
+
+
+# supporting scripts
+LoadData: loads data prepared in raw format. Audio features are oversampled and thus are downsampled. 
+LoadDataSynded: loads data prepared in raw format. Audio features are more or less synced and no DS is needed. 

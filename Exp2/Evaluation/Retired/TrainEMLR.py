@@ -128,7 +128,7 @@ def TrainEM(train_scores,train_vad_ts,train_features_ts):
       # E step to find x_star
       x_star = EStep(updated_output,score_matrix,labels_matrix,second_layer_coeff,second_layer_intercept) 
       
-      if count_iterations == 10:
+      if count_iterations == 5:
          break
       count_iterations += 1
 

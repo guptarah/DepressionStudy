@@ -1,0 +1,3 @@
+
+PrepareData.py: First script only to get depression score and VAD
+PrepareDataAudio.py: Script to get depression, VAD, and audio features

@@ -10,9 +10,9 @@ def PrepareData(input_dir,features_dir,output_dir):
 
       print "In paritition: ", partition_dir
       depression_partition = depression_dir + '/' + partition_dir 
-      emo_arousal_partition = emotions_dir + '/' + partition_dir + '/Arousal/Freeform/' 
-      emo_dominance_partition = emotions_dir + '/' + partition_dir + '/Dominance/Freeform/' 
-      emo_valence_partition = emotions_dir + '/' + partition_dir + '/Valence/Freeform/' 
+      emo_arousal_partition = emotions_dir + '/' + partition_dir + '/Arousal/Northwind/' 
+      emo_dominance_partition = emotions_dir + '/' + partition_dir + '/Dominance/Northwind/' 
+      emo_valence_partition = emotions_dir + '/' + partition_dir + '/Valence/Northwind/' 
       for file_name in os.listdir(depression_partition):
          # loading files
          depression_file = depression_partition + '/' + file_name
@@ -21,9 +21,9 @@ def PrepareData(input_dir,features_dir,output_dir):
          print depression_value
 
          file_id = '_'.join(file_name.split('_')[0:2])
-         arousal_file_pattern = file_id + '_Freeform-AROUSAL_A1-A*'
-         dominance_file_pattern = file_id + '_Freeform-DOMINANCE_A1-A*'
-         valence_file_pattern = file_id + '_Freeform-VALENCE_A1-A*'
+         arousal_file_pattern = file_id + '_Northwind-AROUSAL_A1-A*'
+         dominance_file_pattern = file_id + '_Northwind-DOMINANCE_A1-A*'
+         valence_file_pattern = file_id + '_Northwind-VALENCE_A1-A*'
          
          for arousal_file in os.listdir(emo_arousal_partition):
             if fnmatch.fnmatch(arousal_file, arousal_file_pattern):
@@ -38,8 +38,8 @@ def PrepareData(input_dir,features_dir,output_dir):
                print valence_file
                valence_data = numpy.genfromtxt(emo_valence_partition + '/' + valence_file,delimiter=',')    
         
-         features_file = features_dir + '/Freeform__' + file_id + '_Freeform_audio.mp4_audio.arff'
-         #features_file = features_dir + '/' + file_id + '_Freeform_audio.csv'
+         features_file = features_dir + '/Northwind__' + file_id + '_Northwind_audio.mp4_audio.arff'
+         #features_file = features_dir + '/' + file_id + '_Northwind_audio.csv'
          features = numpy.genfromtxt(features_file, delimiter=',')
  
          # saving values
